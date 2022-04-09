@@ -110,7 +110,6 @@ namespace lab {
     void SampledAudioNode::clearSchedules()
     {
         Scheduled s;
-        while (_internals->incoming.try_dequeue(s)) {}
         _internals->incoming.enqueue({ 0., 0,0,0, -2 });
     }
 
