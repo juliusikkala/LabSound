@@ -34,9 +34,9 @@ add_subdirectory(third_party/libnyquist)
 
 include(cmake/LabSound.cmake)
 
-if (NOT ANDROID AND NOT IOS)
-    include(cmake/examples.cmake)
-endif()
+#if (NOT ANDROID AND NOT IOS)
+#    include(cmake/examples.cmake)
+#endif()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
