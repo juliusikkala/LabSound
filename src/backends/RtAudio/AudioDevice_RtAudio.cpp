@@ -118,7 +118,7 @@ AudioDevice_RtAudio::AudioDevice_RtAudio(
         LOG_ERROR("no audio devices available");
     }
 
-    rtaudio_ctx.showWarnings(true);
+    rtaudio_ctx.showWarnings(false);
 
     // Translate AudioStreamConfig into RTAudio-native data structures
 
