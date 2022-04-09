@@ -104,7 +104,7 @@ AudioDevice * AudioDevice::MakePlatformSpecificDevice(
 
 const float kLowThreshold = -1.0f;
 const float kHighThreshold = 1.0f;
-const bool kInterleaved = false;
+const bool kInterleaved = true;
 
 AudioDevice_RtAudio::AudioDevice_RtAudio(
     AudioDeviceRenderCallback & callback,
