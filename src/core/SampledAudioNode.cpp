@@ -510,8 +510,7 @@ namespace lab {
                 _internals->scheduled.pop_back();
                 --schedule_count;
 
-                if (_scheduler._onEnded)
-                    r.context()->enqueueEvent(_scheduler._onEnded);
+                _scheduler.finish(r);
             }
         }
     }
