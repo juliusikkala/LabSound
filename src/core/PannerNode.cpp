@@ -293,7 +293,7 @@ void PannerNode::getAzimuthElevation(ContextRenderLock & r, double * outAzimuth,
 
     double azimuth = 0.0;
 
-    auto& listener = m_listener;
+    auto listener = m_listener;
     if (!listener)
     {
         // degenerate case with no listener
@@ -378,7 +378,7 @@ float PannerNode::dopplerRate(ContextRenderLock & r)
 {
     double dopplerShift = 1.0;
 
-    auto& listener = m_listener;
+    auto listener = m_listener;
     if (!listener)
     {
         // degenerate case with no listener
@@ -454,7 +454,7 @@ float PannerNode::dopplerRate(ContextRenderLock & r)
 
 float PannerNode::distanceConeGain(ContextRenderLock & r)
 {
-    auto& listener = m_listener;
+    auto listener = m_listener;
     if (!listener)
     {
         // degenerate case with no listener
