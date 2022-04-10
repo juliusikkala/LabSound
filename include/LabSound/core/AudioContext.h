@@ -32,6 +32,7 @@ class AudioNodeInput;
 class AudioNodeOutput;
 class ContextGraphLock;
 class ContextRenderLock;
+class HRTFDatabaseLoader;
 
 class AudioContext
 {
@@ -173,6 +174,9 @@ public:
     void appendDebugBuffer(AudioBus* bus, int channel, int count);
     void flushDebugBuffer(char const* const wavFilePath);
 
+    void initHRTFLoader(std::function<std::shared_ptr<AudioBus>(const std::string& path)>&& loaderCallback);
+    std::shared_ptr<HRTFDatabaseLoader> HRTFLoader() const { return m_hrtf_loader; }
+
 private:
     // @TODO migrate most of the internal datastructures such as
     // PendingConnection into Internals as there's no need to expose these at all.
@@ -180,6 +184,7 @@ private:
     std::unique_ptr<Internals> m_internal;
 
     std::shared_ptr<AudioContextInterface> m_audioContextInterface;
+    std::shared_ptr<HRTFDatabaseLoader> m_hrtf_loader;
 
     std::mutex m_graphLock;
     std::mutex m_renderLock;

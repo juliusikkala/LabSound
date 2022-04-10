@@ -112,9 +112,9 @@ bool HRTFElevation::calculateKernelsForAzimuthElevation(HRTFDatabaseInfo * info,
     // @tofix - this assumes we want to open this path and read via libnyquist fopen.
     // ... will need to change for Android. Maybe MakeBusFromInternalResource / along with a LoadInternalResources requried by LabSound
     sprintf(tempStr, "%03d_P%03d", azimuth, positiveElevation);
-    std::string resourceName = info->searchPath + "/" + "IRC_" + info->subjectName + "_C_R0195_T" + tempStr + ".wav";
+    std::string resourceName = "IRC_" + info->subjectName + "_C_R0195_T" + tempStr + ".wav";
 
-    std::shared_ptr<AudioBus> impulseResponse = lab::MakeBusFromFile(resourceName.c_str(), false);
+    std::shared_ptr<AudioBus> impulseResponse = info->loaderCallback(resourceName);
 
     if (!impulseResponse)
     {

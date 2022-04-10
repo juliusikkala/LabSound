@@ -14,6 +14,7 @@
 #include "LabSound/extended/AudioContextLock.h"
 
 #include "internal/Assertions.h"
+#include "internal/HRTFDatabaseLoader.h"
 
 #include "concurrentqueue/concurrentqueue.h"
 #include "libnyquist/Encoders.h"
@@ -116,6 +117,12 @@ void AudioContext::appendDebugBuffer(AudioBus* bus, int channel, int count)
 void AudioContext::flushDebugBuffer(char const* const wavFilePath)
 {
     m_internal->flushDebugBuffer(wavFilePath);
+}
+
+void AudioContext::initHRTFLoader(
+    std::function<std::shared_ptr<AudioBus>(const std::string& path)>&& loaderCallback
+){
+    m_hrtf_loader = HRTFDatabaseLoader::CreateHRTFLoader(sampleRate(), std::move(loaderCallback));
 }
 
 AudioContext::AudioContext(bool isOffline, bool autoDispatchEvents)

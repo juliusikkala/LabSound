@@ -24,7 +24,7 @@ const double MaxDelayTimeSeconds = 0.002;
 const int UninitializedAzimuth = -1;
 const uint32_t RenderingQuantum = AudioNode::ProcessingSizeInFrames;
 
-HRTFPanner::HRTFPanner(const float sampleRate)
+HRTFPanner::HRTFPanner(const float sampleRate, std::shared_ptr<HRTFDatabaseLoader> dbLoader)
     : Panner(sampleRate, PanningMode::HRTF)
     , m_crossfadeSelection(CrossfadeSelection1)
     , m_azimuthIndex1(UninitializedAzimuth)
@@ -43,6 +43,7 @@ HRTFPanner::HRTFPanner(const float sampleRate)
     , m_tempR1(RenderingQuantum)
     , m_tempL2(RenderingQuantum)
     , m_tempR2(RenderingQuantum)
+    , m_database_loader(dbLoader)
 {
 }
 
@@ -76,7 +77,7 @@ int HRTFPanner::calculateDesiredAzimuthIndexAndBlend(double azimuth, double & az
     if (azimuth < 0)
         azimuth += 360.0;
 
-    HRTFDatabase * database = HRTFDatabaseLoader::defaultHRTFDatabase();
+    HRTFDatabase * database = m_database_loader->database();
     ASSERT(database);
 
     int numberOfAzimuths = database->numberOfAzimuths();
@@ -112,7 +113,7 @@ void HRTFPanner::pan(ContextRenderLock & r, double desiredAzimuth, double elevat
     }
 
     // This code only runs as long as the context is alive and after database has been loaded.
-    HRTFDatabase * database = HRTFDatabaseLoader::defaultHRTFDatabase();
+    HRTFDatabase * database = m_database_loader->database();
     ASSERT(database);
 
     if (!database)

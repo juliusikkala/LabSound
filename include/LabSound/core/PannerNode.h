@@ -61,7 +61,7 @@ public:
         EXPONENTIAL_DISTANCE = 2,
     };
 
-    PannerNode(AudioContext & ac, const std::string & hrtf_root_dir_path = "");
+    PannerNode(AudioContext & ac);
     virtual ~PannerNode();
 
     static const char* static_name() { return "Panner"; }

@@ -39,7 +39,7 @@ static char const * const s_distance_models[lab::DistanceEffect::ModelType::_Cou
 static char const * const s_panning_models[lab::PanningMode::_PanningModeCount + 1] = {
     "Linear", "Inverse", "Exponential", nullptr};
 
-PannerNode::PannerNode(AudioContext & ac, const std::string & searchPath)
+PannerNode::PannerNode(AudioContext & ac)
     : AudioNode(ac)
     , m_orientationX(std::make_shared<AudioParam>("orientationX", "OR X", 0.f, -1.f, 1.f))
     , m_orientationY(std::make_shared<AudioParam>("orientationY", "OR Y", 0.f, -1.f, 1.f))
@@ -59,16 +59,7 @@ PannerNode::PannerNode(AudioContext & ac, const std::string & searchPath)
     , m_panningModel(std::make_shared<AudioSetting>("panningMode", "PANM", s_panning_models))
     , m_sampleRate(ac.sampleRate())
 {
-    if (searchPath.length())
-    {
-        auto stripSlash = [&](const std::string & path) -> std::string {
-            if (path[path.size() - 1] == '/' || path[path.size() - 1] == '\\')
-                return path.substr(0, path.size() - 1);
-            return path;
-        };
-        LOG_INFO("Initializing HRTF Database");
-        m_hrtfDatabaseLoader = HRTFDatabaseLoader::MakeHRTFLoaderSingleton(m_sampleRate, stripSlash(searchPath));
-    }
+    m_hrtfDatabaseLoader = ac.HRTFLoader();
 
     m_distanceEffect.reset(new DistanceEffect());
     m_coneEffect.reset(new ConeEffect());
@@ -159,7 +150,7 @@ void PannerNode::initialize()
             m_panner = std::unique_ptr<Panner>(new EqualPowerPanner(m_sampleRate));
             break;
         case PanningMode::HRTF:
-            m_panner = std::unique_ptr<Panner>(new HRTFPanner(m_sampleRate));
+            m_panner = std::unique_ptr<Panner>(new HRTFPanner(m_sampleRate, m_hrtfDatabaseLoader));
             break;
         default:
             throw std::runtime_error("invalid panning model");
@@ -279,7 +270,7 @@ void PannerNode::setPanningModel(PanningMode model)
                 m_panner = std::unique_ptr<Panner>(new EqualPowerPanner(m_sampleRate));
                 break;
             case PanningMode::HRTF:
-                m_panner = std::unique_ptr<Panner>(new HRTFPanner(m_sampleRate));
+                m_panner = std::unique_ptr<Panner>(new HRTFPanner(m_sampleRate, m_hrtfDatabaseLoader));
                 break;
             default:
                 throw std::invalid_argument("invalid panning model");
@@ -303,6 +294,13 @@ void PannerNode::getAzimuthElevation(ContextRenderLock & r, double * outAzimuth,
     double azimuth = 0.0;
 
     auto& listener = m_listener;
+    if (!listener)
+    {
+        // degenerate case with no listener
+        *outAzimuth = 0.0;
+        *outElevation = 0.0;
+        return;
+    }
 
     // Calculate the source-listener vector
     /// @fixme these values should be per sample, not per quantum
@@ -381,6 +379,11 @@ float PannerNode::dopplerRate(ContextRenderLock & r)
     double dopplerShift = 1.0;
 
     auto& listener = m_listener;
+    if (!listener)
+    {
+        // degenerate case with no listener
+        return dopplerShift;
+    }
 
     // FIXME: optimize for case when neither source nor listener has changed...
     /// @fixme these values should be per sample, not per quantum
@@ -452,6 +455,11 @@ float PannerNode::dopplerRate(ContextRenderLock & r)
 float PannerNode::distanceConeGain(ContextRenderLock & r)
 {
     auto& listener = m_listener;
+    if (!listener)
+    {
+        // degenerate case with no listener
+        return 1.0f;
+    }
 
     /// @fixme these values should be per sample, not per quantum
     FloatPoint3D listenerPosition = {

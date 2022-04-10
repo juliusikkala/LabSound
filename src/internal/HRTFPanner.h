@@ -12,11 +12,12 @@
 namespace lab
 {
 
+class HRTFDatabase;
 class HRTFPanner : public Panner
 {
 
 public:
-    HRTFPanner(const float sampleRate);
+    HRTFPanner(const float sampleRate, std::shared_ptr<HRTFDatabaseLoader> dbLoader);
     virtual ~HRTFPanner();
 
     // Panner
@@ -79,6 +80,8 @@ private:
     AudioFloatArray m_tempR1;
     AudioFloatArray m_tempL2;
     AudioFloatArray m_tempR2;
+
+    std::shared_ptr<HRTFDatabaseLoader> m_database_loader;
 };
 
 }  // namespace lab

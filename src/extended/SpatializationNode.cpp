@@ -87,6 +87,11 @@ float SpatializationNode::distanceConeGain(ContextRenderLock & r)
         return 1.f;
 
     auto& listener = m_listener;
+    if (!listener)
+    {
+        // degenerate case with no listener
+        return 1.0f;
+    }
 
     /// @fixme these values should be per sample, not per quantum
     FloatPoint3D fwd = {

@@ -11,25 +11,22 @@
 namespace lab
 {
 
-// Singleton
-std::shared_ptr<HRTFDatabaseLoader> HRTFDatabaseLoader::s_loader;
-
-std::shared_ptr<HRTFDatabaseLoader> HRTFDatabaseLoader::MakeHRTFLoaderSingleton(float sampleRate, const std::string & searchPath)
-{
-    if (!s_loader)
-    {
-        s_loader = std::make_shared<HRTFDatabaseLoader>(sampleRate, searchPath);
-        s_loader->loadAsynchronously();
-    }
+std::shared_ptr<HRTFDatabaseLoader> HRTFDatabaseLoader::CreateHRTFLoader(
+    float sampleRate,
+    std::function<std::shared_ptr<AudioBus>(const std::string& path)>&& loaderCallback
+){
+    auto s_loader = std::make_shared<HRTFDatabaseLoader>(sampleRate, std::move(loaderCallback));
+    s_loader->loadAsynchronously();
     return s_loader;
 }
 
-HRTFDatabaseLoader::HRTFDatabaseLoader(float sampleRate, const std::string & searchPath)
-    : m_loading(false)
+HRTFDatabaseLoader::HRTFDatabaseLoader(
+    float sampleRate,
+    std::function<std::shared_ptr<AudioBus>(const std::string& path)>&& loaderCallback
+):    m_loading(false)
     , m_databaseSampleRate(sampleRate)
-    , searchPath(searchPath)
+    , loaderCallback(loaderCallback)
 {
-    ASSERT(!s_loader.get());
 }
 
 HRTFDatabaseLoader::~HRTFDatabaseLoader()
@@ -39,10 +36,6 @@ HRTFDatabaseLoader::~HRTFDatabaseLoader()
     if (m_databaseLoaderThread.joinable()) m_databaseLoaderThread.join();
 
     m_hrtfDatabase.reset();
-
-    ASSERT(this == s_loader.get());
-
-    s_loader.reset();
 }
 
 // Asynchronously load the database in this thread.
@@ -59,7 +52,7 @@ void HRTFDatabaseLoader::databaseLoaderEntry(HRTFDatabaseLoader * threadData)
 
 void HRTFDatabaseLoader::load()
 {
-    m_hrtfDatabase.reset(new HRTFDatabase(m_databaseSampleRate, searchPath));
+    m_hrtfDatabase.reset(new HRTFDatabase(m_databaseSampleRate, loaderCallback));
 
     if (!m_hrtfDatabase.get())
     {
@@ -89,12 +82,6 @@ void HRTFDatabaseLoader::waitForLoaderThreadCompletion()
     {
         m_loadingCondition.wait(locker);
     }
-}
-
-HRTFDatabase * HRTFDatabaseLoader::defaultHRTFDatabase()
-{
-    if (!s_loader) return nullptr;
-    return s_loader->database();
 }
 
 }  // namespace lab

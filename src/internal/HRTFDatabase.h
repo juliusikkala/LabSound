@@ -9,10 +9,12 @@
 #include "internal/HRTFElevation.h"
 
 #include <vector>
+#include <functional>
 
 namespace lab
 {
 
+class AudioBus;
 class HRTFKernel;
 class HRTFDatabase
 {
@@ -20,7 +22,10 @@ class HRTFDatabase
     NO_MOVE(HRTFDatabase);
 
 public:
-    HRTFDatabase(float sampleRate, const std::string & searchPath);
+    HRTFDatabase(
+        float sampleRate,
+        std::function<std::shared_ptr<AudioBus>(const std::string& path)>& loaderCallback
+    );
 
     // getKernelsFromAzimuthElevation() returns a left and right ear kernel, and an interpolated left and right frame delay for the given azimuth and elevation.
     // azimuthBlend must be in the range 0 -> 1.

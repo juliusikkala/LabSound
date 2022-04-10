@@ -10,9 +10,11 @@
 #include <condition_variable>
 #include <mutex>
 #include <thread>
+#include <functional>
 
 namespace lab
 {
+class AudioBus;
 
 // HRTFDatabaseLoader will asynchronously load the default HRTFDatabase in a new thread.
 
@@ -23,15 +25,18 @@ public:
     // Both constructor and destructor must be called from the main thread.
     // It's expected that the singletons will be accessed instead.
     // @CBB the guts of the loader should be a private singleton, so that the loader can be constructed without a factory
-    explicit HRTFDatabaseLoader(float sampleRate, const std::string & searchPath);
+    explicit HRTFDatabaseLoader(
+        float sampleRate,
+        std::function<std::shared_ptr<AudioBus>(const std::string& path)>&& loaderCallback
+    );
 
     // Lazily creates the singleton HRTFDatabaseLoader (if not already created) and starts loading asynchronously (when created the first time).
-    // Returns the singleton HRTFDatabaseLoader.
+    // Creates the singleton HRTFDatabaseLoader.
     // Must be called from the main thread.
-    static std::shared_ptr<HRTFDatabaseLoader> MakeHRTFLoaderSingleton(float sampleRate, const std::string & searchPath);
-
-    // Returns the singleton HRTFDatabaseLoader.
-    static std::shared_ptr<HRTFDatabaseLoader> loader() { return s_loader; }
+    static std::shared_ptr<HRTFDatabaseLoader> CreateHRTFLoader(
+        float sampleRate,
+        std::function<std::shared_ptr<AudioBus>(const std::string& path)>&& loaderCallback
+    );
 
     // Both constructor and destructor must be called from the main thread.
     ~HRTFDatabaseLoader();
@@ -49,11 +54,6 @@ public:
     // Called in asynchronous loading thread.
     void load();
 
-    // defaultHRTFDatabase() gives access to the loaded database.
-    // This can be called from any thread, but it is the callers responsibilty to call this while the context (and thus HRTFDatabaseLoader)
-    // is still alive.  Otherwise this will return 0.
-    static HRTFDatabase * defaultHRTFDatabase();
-
 private:
     static void databaseLoaderEntry(HRTFDatabaseLoader * threadData);
 
@@ -61,7 +61,6 @@ private:
     // This must be called from the main thread.
     void loadAsynchronously();
 
-    static std::shared_ptr<HRTFDatabaseLoader> s_loader;  // singleton
     std::unique_ptr<HRTFDatabase> m_hrtfDatabase;
 
     // Holding a m_threadLock is required when accessing m_databaseLoaderThread.
@@ -72,7 +71,7 @@ private:
 
     float m_databaseSampleRate;
 
-    std::string searchPath;
+    std::function<std::shared_ptr<AudioBus>(const std::string& path)> loaderCallback;
 };
 
 }  // namespace lab

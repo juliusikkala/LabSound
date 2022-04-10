@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <random>
 #include <string>
+#include <functional>
+#include <memory>
 
 // clang-format off
 #define NO_COPY(C) C(const C &) = delete; C & operator = (const C &) = delete
@@ -61,11 +63,12 @@ inline T clampTo(S value, T min, T max)
     return static_cast<T>(value);
 }
 
+class AudioBus;
 // Hard-coded to the IRCAM HRTF Database
 struct HRTFDatabaseInfo
 {
     std::string subjectName;
-    std::string searchPath;
+    std::function<std::shared_ptr<AudioBus>(const std::string& path)> loaderCallback;
     float sampleRate;
 
     int minElevation = -45;
@@ -81,9 +84,12 @@ struct HRTFDatabaseInfo
     // Total number of elevations after interpolation.
     int numTotalElevations;
 
-    HRTFDatabaseInfo(const std::string & subjectName, const std::string & searchPath, float sampleRate)
+    HRTFDatabaseInfo(
+        const std::string & subjectName,
+        std::function<std::shared_ptr<AudioBus>(const std::string& path)> loaderCallback,
+        float sampleRate)
         : subjectName(subjectName)
-        , searchPath(searchPath)
+        , loaderCallback(loaderCallback)
         , sampleRate(sampleRate)
     {
         numTotalElevations = numberOfRawElevations * interpolationFactor;

@@ -13,9 +13,11 @@ using namespace std;
 namespace lab
 {
 
-HRTFDatabase::HRTFDatabase(float sampleRate, const std::string & searchPath)
-{
-    info.reset(new HRTFDatabaseInfo("Composite", searchPath, sampleRate));
+HRTFDatabase::HRTFDatabase(
+    float sampleRate,
+    std::function<std::shared_ptr<AudioBus>(const std::string& path)>& loaderCallback
+){
+    info.reset(new HRTFDatabaseInfo("Composite", loaderCallback, sampleRate));
 
     m_elevations.resize(info->numTotalElevations);
 
