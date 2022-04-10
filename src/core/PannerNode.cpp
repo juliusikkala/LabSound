@@ -302,7 +302,7 @@ void PannerNode::getAzimuthElevation(ContextRenderLock & r, double * outAzimuth,
 
     double azimuth = 0.0;
 
-    auto listener = r.context()->listener();
+    auto& listener = m_listener;
 
     // Calculate the source-listener vector
     /// @fixme these values should be per sample, not per quantum
@@ -380,7 +380,7 @@ float PannerNode::dopplerRate(ContextRenderLock & r)
 {
     double dopplerShift = 1.0;
 
-    auto listener = r.context()->listener();
+    auto& listener = m_listener;
 
     // FIXME: optimize for case when neither source nor listener has changed...
     /// @fixme these values should be per sample, not per quantum
@@ -451,7 +451,7 @@ float PannerNode::dopplerRate(ContextRenderLock & r)
 
 float PannerNode::distanceConeGain(ContextRenderLock & r)
 {
-    auto listener = r.context()->listener();
+    auto& listener = m_listener;
 
     /// @fixme these values should be per sample, not per quantum
     FloatPoint3D listenerPosition = {

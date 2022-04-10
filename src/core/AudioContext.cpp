@@ -123,7 +123,6 @@ AudioContext::AudioContext(bool isOffline, bool autoDispatchEvents)
 {
     static std::atomic<int> id {1};
     m_internal.reset(new AudioContext::Internals(autoDispatchEvents));
-    m_listener.reset(new AudioListener());
     m_audioContextInterface = std::make_shared<AudioContextInterface>(this, id);
     ++id;
 
@@ -148,8 +147,6 @@ AudioContext::~AudioContext()
 
     if (graphUpdateThread.joinable())
         graphUpdateThread.join();
-
-    m_listener.reset();
 
     uninitialize();
 
@@ -605,11 +602,6 @@ std::shared_ptr<AudioNode> AudioContext::device()
 bool AudioContext::isOfflineContext() const
 {
     return m_isOfflineContext;
-}
-
-std::shared_ptr<AudioListener> AudioContext::listener()
-{
-    return m_listener;
 }
 
 double AudioContext::currentTime() const

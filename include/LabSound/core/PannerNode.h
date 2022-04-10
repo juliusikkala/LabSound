@@ -127,6 +127,8 @@ public:
     void getAzimuthElevation(ContextRenderLock & r, double * outAzimuth, double * outElevation);
     float dopplerRate(ContextRenderLock & r);
 
+    std::shared_ptr<AudioListener> listener() { return m_listener; };
+
     // Accessors for dynamically calculated gain values.
     std::shared_ptr<AudioParam> distanceGain() { return m_distanceGain; }
     std::shared_ptr<AudioParam> coneGain() { return m_coneGain; }
@@ -148,6 +150,7 @@ protected:
     std::unique_ptr<Panner> m_panner;
     std::unique_ptr<DistanceEffect> m_distanceEffect;
     std::unique_ptr<ConeEffect> m_coneEffect;
+    std::shared_ptr<AudioListener> m_listener;
 
     float m_lastGain = -1.0f;
     float m_sampleRate;

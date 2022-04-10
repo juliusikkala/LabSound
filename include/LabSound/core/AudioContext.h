@@ -116,8 +116,6 @@ public:
 
     float sampleRate() const;
 
-    std::shared_ptr<AudioListener> listener();
-
     // Called at the start of each render quantum.
     void handlePreRenderTasks(ContextRenderLock &);
 
@@ -207,8 +205,6 @@ private:
 
     AudioDeviceRenderCallback * device_callback{nullptr};
     std::shared_ptr<AudioNode> m_device;
-
-    std::shared_ptr<AudioListener> m_listener;
 
     std::set<std::shared_ptr<AudioNode>> m_automaticPullNodes;  // queue for added pull nodes
     std::vector<std::shared_ptr<AudioNode>> m_renderingAutomaticPullNodes;  // vector of known pull nodes
